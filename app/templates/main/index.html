@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% block head %}
+    <title>salt-web管理系统</title>
+{% endblock %}
+{% block body %}
+<div class="row">
+{# 左边菜单#}
+{% include 'main/_main.html' %}
+    <div class="col-md-10">
+        {#        面包屑导航#}
+                <ol class="breadcrumb">
+                    <li><a href="/">首页</a></li>
+                    <li class="active">仪表盘</li>
+                </ol>
+        {#        服务器状态#}
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="panel panel-primary">
+                        <div class="panel-heading">服务器状态</div>
+                            <table class="table">
+                                <tr>
+                                    <td>1</td>
+                                </tr>
+                                <tr>
+                                    <td>2</td>
+                                </tr>
+                                <tr>
+                                    <td>3</td>
+                                </tr>
+                            </table>
+
+                    </div>
+
+                </div>
+                <div class="col-md-3">
+                    <div class="panel panel-primary">
+                        <div class="panel-heading">服务器状态</div>
+                            <table class="table">
+                                <tr>
+                                    <td>1</td>
+                                </tr>
+                                <tr>
+                                    <td>2</td>
+                                </tr>
+                                <tr>
+                                    <td>3</td>
+                                </tr>
+                            </table>
+
+                    </div>
+
+                </div>
+                <div class="col-md-2">
+                    <div class="panel panel-primary">
+                        <div class="panel-heading">服务器状态</div>
+                            <table class="table">
+                                <tr>
+                                    <td>1</td>
+                                </tr>
+                                <tr>
+                                    <td>2</td>
+                                </tr>
+                                <tr>
+                                    <td>3</td>
+                                </tr>
+                            </table>
+
+                    </div>
+
+                </div>
+                <div class="col-md-2">
+                    <div class="panel panel-primary">
+                        <div class="panel-heading">服务器状态</div>
+                            <table class="table">
+                                <tr>
+                                    <td>1</td>
+                                </tr>
+                                <tr>
+                                    <td>2</td>
+                                </tr>
+                                <tr>
+                                    <td>3</td>
+                                </tr>
+                            </table>
+
+                    </div>
+
+                </div>
+            </div>
+        {#        操作记录#}
+        <div class="row">
+            <div class="col-md-6">
+                    <div class="panel panel-primary">
+                        <div class="panel-heading">
+                           <span>操作记录</span>
+                        </div>
+                      <div class="panel-body">
+                        <span>1、张三操作了A机器</span><br/>
+                        <span>2、李四操作了B机器</span>
+                      </div>
+                    </div>
+                </div>
+            </div>
+    </div>
+</div>
+
+{% endblock %}
+{% block js_script %}
+{% endblock %}

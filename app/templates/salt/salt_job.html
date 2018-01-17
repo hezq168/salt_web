@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% block head %}
+    <title>salt-web管理系统</title>
+{% endblock %}
+{% block body %}
+
+<div class="row">
+{# 左边菜单#}
+{% include 'main/_main.html' %}
+    <div class="col-md-10">
+        {#        面包屑导航#}
+        <ol class="breadcrumb" style="margin-bottom: 5px">
+            <li><a href="/">首页</a></li>
+            <li class="active">job管理</li>
+        </ol>
+        {#        job管理#}
+        <div class="row">
+            <div class="col-md-6" style="margin-bottom: 5px">
+                <div class="panel panel-default">
+                    <div class="panel-body">
+                        <form action="#" method="post" id="add" class="form-inline">
+                            <div class="form-group">
+                                <label for="cmd" class="control-label">命令行:</label>
+                                <input type="text" class="form-control" name='cmd' id="cmd" style="width: 300px">
+                            </div>
+                            <div class="form-group">
+                                <button type="submit" class="btn btn-primary" id="Btn_Cmd">执行</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-12">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover table-striped" >
+                            <thead>
+                            <tr class="success">
+                                <th>jid</th>
+                                <th>Arguments</th>
+                                <th>Function</th>
+                                <th>StartTime</th>
+                                <th>Target</th>
+                                <th>Target-type</th>
+                                <th>User</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for key,value in jobs%}
+                                <tr>
+                                    <td><a href="#" class="jid">{{ key }}</a></td>
+                                    <td>{{ value['Arguments'] }}</td>
+                                    <td>{{ value['Function'] }}</td>
+                                    <td>{{ value['StartTime'] }}</td>
+                                    <td>{{ value['Target'] }}</td>
+                                    <td>{{ value['Target-type'] }}</td>
+                                    <td>{{ value['User'] }}</td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+
+
+{# ajax返回消息模态窗口#}
+{% include 'msg.html' %}
+{% endblock %}
+
+{% block js_script %}
+    <script type="application/javascript">
+        $(document).ready(function() {
+            {# 返回消息#}
+            function msg(op, title, body) {
+                if (op == 'ok') {
+                    $('.msg-title').html(title).addClass('alert alert-success');
+                    $('.msg-body').html(body);
+                    $('#myModal').modal('show');
+                } else if (op == 'error') {
+                    $('.msg-title').html(title).addClass('alert alert-warning');
+                    $('.msg-body').html(body);
+                    $('#myModal').modal('show');
+                };
+            };
+            $('#jid').click(function(){
+               alert('1111111111');
+
+            });
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,198 @@
+{% extends 'base.html' %}
+{% block head %}
+    <title>salt-web管理系统</title>
+{% endblock %}
+{% block body %}
+
+<div class="row">
+{# 左边菜单#}
+{% include 'main/_main.html' %}
+<div class="col-md-10">
+    {#        面包屑导航#}
+    <ol class="breadcrumb" style="margin-bottom: 5px">
+        <li><a href="/">首页</a></li>
+        <li class="active">key管理</li>
+    </ol>
+    {#        服务器状态#}
+    <div class="row">
+        <div class="col-md-6" style="margin-bottom: 5px">
+            {% if session.user.node.has_key(20) or current_user.role_id==1%}
+            <button class="btn btn-sm btn-primary" type="button" id="Accepted_key" disabled="disabled">接受</button>
+            {% endif %}
+            {% if session.user.node.has_key(21) or current_user.role_id==1%}
+            <button class="btn btn-sm btn-warning" type="button" id="Rejected_key" disabled="disabled">拒绝</button>
+            {% endif %}
+        </div>
+        <div class="col-md-12">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover table-striped" >
+                    <thead>
+                    <tr class="success">
+                        <th width="2%">#</th>
+                        <th>ID</th>
+                        <th>Minion ID</th>
+                        <th>Minion IP</th>
+                        <th>状态</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for minions in keys.minions %}
+                        <tr>
+                            <td width="2%">
+                                <input type="radio" name="radio" class="radio" value="
+                                    {% for host in hosts %}
+                                        {{host.id if host.minion==minions else ''}}
+                                     {% endfor %}">
+                            </td>
+                            <td>{% for host in hosts %}
+                                {{host.id if host.minion==minions else ''}}
+                            {% endfor %}</td>
+                            <td>{{ minions }}</td>
+                            <td>{% for host in hosts %}
+                                {{host.ip if host.minion==minions else ''}}
+                            {% endfor %}</td>
+                            <td><span class="label label-success">已认证</span></td>
+                        </tr>
+                    {% endfor %}
+                    {% for minions_pre in keys.minions_pre %}
+                        <tr>
+                            <td width="2%">
+                                <input type="radio" name="radio" class="radio" value="
+                                    {% for host in hosts %}
+                                        {{host.id if host.minion==minions_pre else ''}}
+                                     {% endfor %}">
+                            </td>
+                            <td>{% for host in hosts %}
+                                {{host.id if host.minion==minions_pre else ''}}
+                            {% endfor %}</td>
+                            <td>{{ minions_pre }}</td>
+                            <td>{% for host in hosts %}
+                                {{host.ip if host.minion==minions_pre else ''}}
+                            {% endfor %}</td>
+                            <td><span class="label label-warning">未认证</span></td>
+                        </tr>
+                    {% endfor %}
+                    {% for minions_rejected in keys.minions_rejected %}
+                        <tr>
+                            <td width="2%">#</td>
+                            <td></td>
+                            <td>{{ minions_rejected }}</td>
+                            <td>ID</td>
+                            <td>未认证</td>
+                        </tr>
+                    {% endfor %}
+                    {% for minions_denied in keys.minions_denied %}
+                        <tr>
+                            <td width="2%">#</td>
+                            <td>{{ minions_denied }}</td>
+                            <td>ID</td>
+                            <td>ID</td>
+                            <td>未认证</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+{#    加载窗口#}
+{% include 'spin.html' %}
+{# ajax返回消息模态窗口#}
+{% include 'msg.html' %}
+{% endblock %}
+{% block js_script %}
+<script type="application/javascript">
+$(document).ready(function() {
+    {# 返回消息#}
+    function msg(op, title, body) {
+        if (op == 'ok') {
+            $('.msg-title').html(title).addClass('alert alert-success');
+            $('.msg-body').html(body);
+            $('#myModal').modal('show');
+        } else if (op == 'error') {
+            $('.msg-title').html(title).addClass('alert alert-warning');
+            $('.msg-body').html(body);
+            $('#myModal').modal('show');
+        };
+    };
+    {# 按钮激活#}
+    $('.radio').click(function(){
+        var mini_id = $.trim($(this).parent().parent().find('td:eq(2)').html());
+        var mini_staus = $.trim($(this).parent().parent().find('td:eq(4)').text());
+        if (mini_staus =="已认证"){
+            $('#Rejected_key').removeAttr("disabled").val(mini_id);
+            $('#Denied_key').removeAttr("disabled").val(mini_id);
+        }else{
+            $('#Accepted_key').removeAttr("disabled").val(mini_id);
+        };
+    });
+{% if session.user.node.has_key(20) or current_user.role_id==1%}
+    {# 接受key#}
+    $('#Accepted_key').click(function(){
+        var mini_id = $(this).val();
+        var keydata ={
+            'Minion_ID':mini_id,
+        };
+        $.ajax({
+            type:'POST',
+            url:'/add_key/',
+            data:keydata,
+            dataType: 'json',
+            beforeSend: function () {
+                //异步请求时spinner出现
+                $('.main_active').removeClass('active');
+                $("#mb").css("display","block");
+                var target = $("#firstDiv").get(0);
+                spinner.spin(target);
+            },
+            success: function (data) {
+                $('.main_active').addClass('active');
+                $("#mb").css("display","none");
+                spinner.spin();
+                msg(data.status,data.title,data.txt);
+                setTimeout("window.location = '/salt_key/'",2000);
+            },
+            error:function(data){
+                console.log(data)
+            }
+        });
+    });
+{% endif %}
+{% if session.user.node.has_key(21) or current_user.role_id==1%}
+    {# 拒绝key#}
+    $('#Rejected_key').click(function(){
+        var mini_id = $(this).val();
+        var keydata ={
+            'Minion_ID':mini_id,
+        };
+        $.ajax({
+            type:'POST',
+            url:'/del_key/',
+            data:keydata,
+            dataType: 'json',
+            beforeSend: function () {
+                //异步请求时spinner出现
+                $('.main_active').removeClass('active');
+                $("#mb").css("display","block");
+                var target = $("#firstDiv").get(0);
+                spinner.spin(target);
+            },
+            success: function (data) {
+                $('.main_active').addClass('active');
+                $("#mb").css("display","none");
+                //关闭spinner
+                spinner.spin();
+                msg(data.status,data.title,data.txt);
+                setTimeout("window.location = '/salt_key/'",2000);
+            },
+            error:function(data){
+                console.log(data)
+            }
+        });
+    });
+{% endif %}
+});
+</script>
+{% endblock %}

@@ -1,0 +1,38 @@
+{# 添加角色模态窗口#}
+<div class="modal fade" id="add_role" tabindex="-1" role="dialog" aria-labelledby="add_roleModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="add_roleModalLabel">添加角色</h4>
+      </div>
+      <div class="modal-body">
+        <form action="#" method="post" id="add">
+          <div class="form-group">
+            <label for="role" class="control-label">角色名:</label>
+            <input type="text" class="form-control" name='role' id="role">
+          </div>
+          <div class="form-group">
+            <label for="add_role_txt" class="control-label">角色说明:</label>
+            <input type="text" class="form-control" name='add_role_txt' id="add_role_txt">
+          </div>
+          <div class="form-group">
+            <label for="add_role_node" class="control-label">权限:</label>
+            <div class="checkbox">
+                {% for node in nodes %}
+                    <label><input type="checkbox" name="add_role_node" id='add_role_node' value="{{  node.id }}">{{  node.id }}、{{ node.name }}</label>
+                {% endfor %}
+            </div>
+          </div>
+
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+            <button type="submit" id='btnSubmit' class="btn btn-primary">添加</button>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

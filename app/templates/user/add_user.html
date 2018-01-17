@@ -1,0 +1,59 @@
+{# 添加用户模态窗口#}
+<div class="modal fade" id="add_user" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="exampleModalLabel">添加用户</h4>
+      </div>
+      <div class="modal-body">
+        <form action="#" method="post" id="add">
+          <div class="form-group">
+            <label for="add_username" class="control-label">用户名:</label>
+            <input type="text" class="form-control" name='add_username' id="add_username">
+          </div>
+          <div class="form-group">
+            <label for="add_password" class="control-label">密码:</label>
+            <input type="password" class="form-control" name='add_password' id="add_password">
+          </div>
+          <div class="form-group">
+            <label for="add_name" class="control-label">姓名:</label>
+            <input type="text" class="form-control" name='add_name' id="add_name">
+          </div>
+          <div class="form-group">
+            <label class="radio-inline">
+              <input type="radio" name="add_sex"  value="男" checked="checked">男
+            </label>
+            <label class="radio-inline">
+                <input type="radio" name="add_sex"  value="女">女
+            </label>
+          </div>
+          <div class="form-group">
+            <label for="add_tel" class="control-label">电话:</label>
+            <input type="text" class="form-control" name='add_tel' id="add_tel">
+          </div>
+          <div class="form-group">
+            <label for="add_qq" class="control-label">QQ:</label>
+            <input type="text" class="form-control" name='add_qq' id="add_qq">
+          </div>
+          <div class="form-group">
+            <label for="add_email" class="control-label">邮箱:</label>
+            <input type="email" class="form-control" name='add_email' id="add_email">
+          </div>
+          <div class="form-group">
+            <label for="add_role" class="control-label">角色:</label>
+            <select class="form-control" id="add_role" name="add_role">
+                    {% for role in roles %}
+                         <option value ="{{ role.id }}">{{ role.name }}</option>
+                    {% endfor %}
+            </select>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+            <button type="submit" id='btnSubmit' class="btn btn-primary">添加</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

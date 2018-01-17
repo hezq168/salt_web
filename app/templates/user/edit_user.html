@@ -1,0 +1,56 @@
+{# 修改用户模态窗口#}
+<div class="modal fade" id="edit_user" tabindex="-1" role="dialog" aria-labelledby="editModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="editModalLabel">修改用户</h4>
+      </div>
+      <div class="modal-body">
+        <form action="#" method="post" id="edit">
+            <input type="hidden" class="edit_id" name="edit_id" id="edit_id">
+          <div class="form-group">
+            <label for="edit_username" class="control-label">用户名:</label>
+            <input type="text" class="form-control" name='edit_username' id="edit_username">
+          </div>
+          <div class="form-group">
+            <label for="edit_name" class="control-label">姓名:</label>
+            <input type="text" class="form-control" name='edit_name' id="edit_name">
+          </div>
+          <div class="form-group">
+            <label class="radio-inline">
+              <input type="radio" name="edit_sex" value="男" checked="checked">男
+            </label>
+            <label class="radio-inline">
+                <input type="radio" name="edit_sex"  value="女">女
+            </label>
+          </div>
+          <div class="form-group">
+            <label for="edit_tel" class="control-label">电话:</label>
+            <input type="text" class="form-control" name='edit_tel' id="edit_tel">
+          </div>
+          <div class="form-group">
+            <label for="edit_qq" class="control-label">QQ:</label>
+            <input type="text" class="form-control" name='edit_qq' id="edit_qq">
+          </div>
+          <div class="form-group">
+            <label for="edit_email" class="control-label">邮箱:</label>
+            <input type="email" class="form-control" name='edit_email' id="edit_email">
+          </div>
+          <div class="form-group">
+            <label for="edit_role" class="control-label">角色:</label>
+            <select class="form-control" id="edit_role" name="edit_role">
+                    {% for role in roles %}
+                         <option value ="{{ role.id }}">{{ role.name }}</option>
+                    {% endfor %}
+            </select>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+            <button type="submit" id='editSubmit' class="btn btn-primary">修改</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

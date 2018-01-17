@@ -1,0 +1,251 @@
+{% extends 'base.html' %}
+{% block head %}
+    <title>salt-web管理系统</title>
+{% endblock %}
+{% block body %}
+<div class="row">
+{# 左边菜单#}
+{% include 'main/_main.html' %}
+<div class="col-md-10">
+        {#        面包屑导航#}
+                <ol class="breadcrumb" style="margin-bottom: 5px">
+                    <li><a href="/">首页</a></li>
+                    <li class="active">主机组列表</li>
+                </ol>
+{#        主机操作#}
+            <div class="row"  >
+                <div class="col-md-6" style="margin-bottom: 5px">
+                    {% if session.user.node.has_key(15) or current_user.role_id==1%}
+                    <button class="btn btn-sm btn-primary" data-toggle="modal" data-target="#add_host_group" type="button">添加主机组</button>
+                    {% endif %}
+                    {% if session.user.node.has_key(16) or current_user.role_id==1%}
+                    <button class="btn btn-sm btn-primary" data-toggle="modal" id="Btn_edit" data-target="#edit_host_group" type="button" disabled="disabled">编辑</button>
+                    {% endif %}
+                    {% if session.user.node.has_key(17) or current_user.role_id==1%}
+                    <button class="btn btn-sm  btn-danger" type="button" id="Btn_del" disabled="disabled">删除</button>
+                    {% endif %}
+                </div>
+                <div class="col-md-12">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover table-striped" >
+                        <thead>
+                            <tr class="success">
+                                <th width="2%">#</th>
+                                <th width="4%">ID</th>
+                                <th width="10%">主机组</th>
+                                <th width="20%">说明</th>
+                                <th>主机名</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for group in groups %}
+                            <tr>
+                            <td>
+                                <input type="radio" name="radio" class="radio" value="{{ group.id }}">
+                                 <td>{{ group.id }}</td>
+                                 <td>{{ group.name }}</td>
+                                 <td>{{ group.txt }}</td>
+                                 <td>{% for h in group.host %}
+                                        {{ h.ip  }}/
+                                     {% endfor %}
+                                     </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+
+            </table>
+                    </div>
+                </div>
+
+            </div>
+
+
+</div>
+</div>
+
+{# 添加主机组模态窗口#}
+{% if session.user.node.has_key(15) or current_user.role_id==1%}
+<div class="modal fade" id="add_host_group" tabindex="-1" role="dialog" aria-labelledby="add_host_groupModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="add_host_groupModalLabel">添加主机组</h4>
+      </div>
+      <div class="modal-body">
+        <form action="#" method="post" id="add">
+          <div class="form-group">
+            <label for="host_group" class="control-label">主机组:</label>
+            <input type="text" class="form-control" name='host_group' id="host_group">
+          </div>
+          <div class="form-group">
+            <label for="host_group_txt" class="control-label">主机组说明:</label>
+            <input type="text" class="form-control" name='host_group_txt' id="host_group_txt">
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+            <button type="submit" id='btnSubmit' class="btn btn-primary">添加</button>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{# 修改主机组模态窗口#}
+{% if session.user.node.has_key(16) or current_user.role_id==1%}
+<div class="modal fade" id="edit_host_group" tabindex="-1" role="dialog" aria-labelledby="edit_host_groupModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="edit_host_groupModalLabel">修改主机组</h4>
+      </div>
+      <div class="modal-body">
+        <form action="#" method="post" id="edit">
+            <input type="hidden" class="group_id" name="group_id">
+          <div class="form-group">
+            <label for="edit_group" class="control-label">主机组:</label>
+            <input type="text" class="form-control" name='edit_group' id="edit_group">
+          </div>
+          <div class="form-group">
+            <label for="edit_group_txt" class="control-label">主机组说明:</label>
+            <input type="text" class="form-control" name='edit_group_txt' id="edit_group_txt">
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+            <button type="submit" id='btnSubmit' class="btn btn-primary">修改</button>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+{# ajax返回消息模态窗口#}
+{% include 'msg.html' %}
+{% endblock %}
+{% block js_script %}
+<script type="application/javascript">
+$(document).ready(function() {
+    {#          返回消息#}
+    function msg(op, title, body) {
+        if (op == 'ok') {
+            $('.msg-title').html(title).addClass('alert alert-success');
+            $('.msg-body').html(body);
+            $('#myModal').modal('show');
+        } else if (op == 'error') {
+            $('.msg-title').html(title).addClass('alert alert-warning');
+            $('.msg-body').html(body);
+            $('#myModal').modal('show');
+        };
+    };
+{#  状态修改#}
+        $('.radio').click(function(){
+                $('#Btn_del').removeAttr("disabled");
+                $('#Btn_edit').removeAttr("disabled");
+          });
+
+{#添加主机组#}
+        $('#add').validate({
+            rules:{
+                host_group:{ required:true,minlength:2,remote:'/check_host_group/'},
+            },
+            messages:{
+                host_group:{ required:'主机组必填！',minlength:'主机组不得少于2位！',remote:'主机组重复！'},
+            },
+            submitHandler:function(form){
+                $.ajax({
+                    type:'POST',
+                    url:'/add_hosts_group/',
+                    data:$(form).serialize(),
+                    dataType: 'json',
+                    success: function (data) {
+                        $('#add_host_group').modal('hide');
+                        msg(data.status,data.title,data.txt);
+                        setTimeout("window.location = '/hosts_group/'",2000);
+                    },
+                    error:function(data){
+                        console.log(data)
+                    }
+
+                })
+            }
+        });
+
+{#删除主机组#}
+        $('#Btn_del').click(function(){
+            var group_id = $('input:radio[name="radio"]:checked').val();
+            var groupdata ={
+                'group_id' : group_id,
+            };
+            $.ajax({
+                type:'POST',
+                url:'/del_hosts_group/',
+                data:groupdata,
+                dataType: 'json',
+                success: function (data) {
+                    msg(data.status,data.title,data.txt);
+                    setTimeout("window.location = '/hosts_group/'",2000);
+                },
+                error:function(data){
+                    console.log(data)
+                }
+
+            });
+        });
+
+{#修改主机组获取数据#}
+        $('#Btn_edit').click(function(){
+            var group_id = $('input:radio[name="radio"]:checked').val();
+            var groupdata ={
+                'group_id' : group_id,
+            };
+            $.ajax({
+                type:'GET',
+                url:'/edit_hosts_group/',
+                data:groupdata,
+                dataType: 'json',
+                success: function (data) {
+                    $('.group_id').val(data.id);
+                    $('#edit_group').val(data.name);
+                    $('#edit_group_txt').val(data.txt);
+                },
+                error:function(data){
+                    console.log(data);
+                }
+            });
+        });
+        $('#edit').validate({
+            rules:{
+                edit_group:{ required:true,minlength:2,remote:'/check_host_group/'},
+            },
+            messages:{
+                edit_group:{ required:'主机组必填！',minlength:'主机组不得少于2位！',remote:'主机组重复！'},
+            },
+            submitHandler:function(form){
+                $.ajax({
+                    type:'POST',
+                    url:'/edit_hosts_group/',
+                    data:$(form).serialize(),
+                    dataType: 'json',
+                    success: function (data) {
+                        $('#edit_host_group').modal('hide');
+                        msg(data.status,data.title,data.txt);
+                        setTimeout("window.location = '/hosts_group/'",2000);
+                    },
+                    error:function(data){
+                        console.log(data)
+                    }
+
+                })
+            }
+        });
+
+
+});
+</script>
+{% endblock %}

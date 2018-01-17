@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+{% block head %}
+    <title>salt-web管理系统</title>
+{% endblock %}
+{% block body %}
+
+    <div class="row">
+        {# 左边菜单#}
+        {% include 'main/_main.html' %}
+        <div class="col-md-10">
+            {#        面包屑导航#}
+            <ol class="breadcrumb" style="margin-bottom: 5px">
+                <li><a href="/">首页</a></li>
+                <li class="active">cmd模块</li>
+            </ol>
+            {#        cmd操作状态#}
+            <div class="row">
+                <div class="col-md-7" style="margin-bottom: 5px">
+                    <div class="panel panel-default">
+                        <div class="panel-body">
+                            <form action="#" method="post" id="add" class="form-inline">
+                                <div class="form-group">
+                                    <label for="host" class="control-label">主机:</label>
+                                    <select class="form-control" name='host' id="host">
+                                        {% for minion in minions %}
+                                            <option value="{{ minion }}">{{ minion }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="cmd" class="control-label">命令行:</label>
+                                    <input type="text" class="form-control" name='cmd' id="cmd" style="width: 300px">
+                                </div>
+                                <div class="form-group">
+                                    <button type="submit" class="btn btn-primary" id="Btn_Cmd">执行</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <div class="panel panel-success" id="result" style="display:none">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <div id="Div">
+        <div id="firstDiv">
+        </div>
+        <div id="secondDiv">
+        </div>
+    </div>
+    <div id="mb"></div>
+    {# ajax返回消息模态窗口#}
+    {% include 'msg.html' %}
+{% endblock %}
+{% block js_script %}
+    <script type="application/javascript">
+        $(document).ready(function() {
+            {# 返回消息#}
+            function msg(op, title, body) {
+                if (op == 'ok') {
+                    $('.msg-title').html(title).addClass('alert alert-success');
+                    $('.msg-body').html(body);
+                    $('#myModal').modal('show');
+                } else if (op == 'error') {
+                    $('.msg-title').html(title).addClass('alert alert-warning');
+                    $('.msg-body').html(body);
+                    $('#myModal').modal('show');
+                };
+            };
+            $('#add').validate({
+                rules:{
+                    host:{ required:true},
+                    cmd:{ required:true,minlength:2},
+                },
+                messages:{
+                    host:{ required:'主机名必填！'},
+                    cmd:{ required:'命令必填！',minlength:'命令至少2位字母或数字！'},
+                },
+                submitHandler:function(form){
+                    var title_stat = '<div class="panel-heading"><h3 class="panel-title res_host">';
+                    var title_end  = '</h3></div>';
+                    var span_stat ='<div class="panel-body"><pre><div class="res">';
+                    var span_end  = '</div></pre>';
+
+
+                    $.ajax({
+                        type:'POST',
+                        url:'/salt_cmd/',
+                        data:$(form).serialize(),
+                        dataType: 'json',
+                        beforeSend: function () {
+                            //异步请求时spinner出现
+                            $('.main_active').removeClass('active');
+                            $("#mb").css("display","block");
+                            var target = $("#firstDiv").get(0);
+                            spinner.spin(target);
+                        },
+                        success: function (data) {
+                            $.each(data['0'], function(i, item) {
+                                $('#result').show();
+                                $("#result").prepend(span_stat + item + span_end);
+                                $('#result').prepend(title_stat + i +title_end);
+
+                            });
+                            $('.main_active').addClass('active');
+                            $("#mb").css("display","none");
+                            spinner.spin();
+                        },
+                        error:function(data){
+                            $("#mb").css("display","none");
+                            $('.main_active').addClass('active');
+                            spinner.spin();
+                            console.log(data);
+                        }
+
+                    })
+                }
+            });
+        });
+    </script>
+{% endblock %}

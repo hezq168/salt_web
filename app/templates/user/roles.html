@@ -1,0 +1,262 @@
+{% extends 'base.html' %}
+{% block head %}
+    <title>salt-web管理系统</title>
+{% endblock %}
+{% block body %}
+    <div class="row">
+        {# 左边菜单#}
+        {% include 'main/_main.html' %}
+        <div class="col-md-10">
+            {#        面包屑导航#}
+            <ol class="breadcrumb" style="margin-bottom: 5px">
+                <li><a href="/">首页</a></li>
+                <li class="active">角色列表</li>
+            </ol>
+            {#        用户操作#}
+            <div class="row"  >
+                <div class="col-md-6" style="margin-bottom: 5px">
+                    {% if session.user.node.has_key(6) or current_user.role_id==1%}
+                        <button class="btn btn-sm btn-primary" data-toggle="modal" data-target="#add_role" type="button">添加角色</button>
+                    {% endif %}
+                    {% if session.user.node.has_key(7) or current_user.role_id==1%}
+                        <button class="btn btn-sm btn-primary" data-toggle="modal" id='Btn_edit' data-target="#edit_role" type="button" disabled>编辑</button>
+                    {% endif %}
+                    {% if session.user.node.has_key(8) or current_user.role_id==1%}
+                        <button class="btn btn-sm  btn-danger" id='del_role' type="button" disabled>删除</button>
+                    {% endif %}
+                </div>
+                <div class="col-md-12">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover table-striped">
+                            <thead>
+                            <tr class="success">
+                                <th width="2%">#</th>
+                                <th width="2%">ID</th>
+                                <th width="8%">角色名</th>
+                                <th>权限</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for role in roles %}
+                                <tr>
+                                    <td>
+                                        <input type="radio" name="radio" class="radio" value="{{ role.id }}">
+                                    </td>
+                                    <td>{{ role.id }}</td>
+                                    <td>{{ role.name }}</td>
+                                    <td>{% for node in role.node_id %}
+                                        {{ node.name }}、
+                                    {% endfor %}</td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+        {# 添加角色#}
+        {% if session.user.node.has_key(6) or current_user.role_id==1%}
+            {% include 'user/add_roles.html' %}
+        {% endif %}
+        {# 修改角色#}
+        {% if session.user.node.has_key(7) or current_user.role_id==1%}
+            {% include 'user/edit_roles.html' %}
+        {% endif %}
+        {# ajax返回消息模态窗口#}
+        {% include 'msg.html' %}
+    </div>
+{% endblock %}
+{% block js_script %}
+    <script type="application/javascript">
+        $(document).ready(function(){
+            {#          返回消息#}
+            function msg(op,title,body){
+                if (op == 'ok')
+                {
+                    $('.msg-title').html(title).addClass('alert alert-success');
+                    $('.msg-body').html(body);
+                    $('#myModal').modal('show');
+                }else if(op == 'error'){
+                    $('.msg-title').html(title).addClass('alert alert-warning');
+                    $('.msg-body').html(body);
+                    $('#myModal').modal('show');
+                };
+
+            };
+
+            {#  状态修改#}
+            $('.radio').click(function(){
+                $('#del_role').removeAttr("disabled");
+                $('#Btn_edit').removeAttr("disabled");
+            });
+            {#获取复选框值#}
+            function getCheck(){
+                var arr1=[];
+                $("input[type='checkbox']:checked").each(function(){
+                    arr1.push(this.value);
+                })
+                var json1 = JSON.stringify(arr1);//数组转换成json，都在了，数组和json
+                var role = $('#role').val();
+                var role_txt = $('#add_role_txt').val();
+                var roledata ={
+                    'role':role,
+                    'role_txt':role_txt,
+                    'node':json1
+                };
+                $.ajax({
+                    type:'POST',
+                    url:'/add_role/',
+                    //data:$(form).serialize(),
+                    data:roledata,
+                    dataType: 'json',
+                    success: function (data) {
+                        $('#add_role').modal('hide');
+                        msg(data.status,data.title,data.txt);
+                        setTimeout("window.location = '/role/'",2000);
+                    },
+                    error:function(data){
+                        $('#add_role').modal('hide');
+                        msg(data.status,data.title,data.txt);
+                    }
+
+                })
+
+
+            }
+
+            {#            添加角色#}
+            $('#add').validate({
+                rules:{
+                    role:{ required:true,minlength:2},
+                    add_role_node:{required:true},
+                },
+                messages:{
+                    role:{ required:'角色名必填！',minlength:'角色名不得少于2位！'},
+                    add_role_node:{required:'权限必填！'}
+                },
+                submitHandler:function(form){
+                    getCheck();
+                }
+            });
+
+            {#删除角色#}
+            $('#del_role').click(function(){
+                var role_id = $('input:radio[name="radio"]:checked').val();
+                var roledata ={
+                    'role_id':role_id,
+                };
+                $.ajax({
+                    type:'POST',
+                    url:'/del_role/',
+                    data:roledata,
+                    dataType: 'json',
+                    success: function (data) {
+                        msg(data.status,data.title,data.txt);
+                        setTimeout("window.location = '/role/'",2000);
+                    },
+                    error:function(data){
+                        console.log(data)
+                    }
+                });
+            });
+
+            {#            修改角色获取数据#}
+            $('#Btn_edit').click(function(){
+                var role_id = $('input:radio[name="radio"]:checked').val();
+                var roledata ={
+                    'role_id' : role_id
+                };
+                $.ajax({
+                    type:'GET',
+                    url:'/edit_role/',
+                    data:roledata,
+                    dataType: 'json',
+                    success: function (data) {
+                        $('#editrole').val(data.role_name);
+                        $('#edit_role_txt').val(data.role_txt);
+                        $('.role_id').val(data.role_id);
+                        {#                        $.each(data.node_id, function (n, value) {#}
+                        {#                                $('.edit_role_node').value(value).attr("checked",true);#}
+                        {#                       });#}
+                        $('.edit_role_node').each(function() {
+                            var node_id = data.node_id;
+                            for (i=0;i<node_id.length;i++){
+                                if ($(this).val() == node_id[i]) {
+                                    $("input[name=edit_role_node][value="+ $(this).val() +"]").attr("checked",true);
+                                }
+
+                            }
+
+
+
+
+                        });
+                    },
+                    error:function(data){
+                        console.log(data)
+                    }
+
+                });
+
+            });
+
+
+            {#            修改角色获取数据#}
+            function editget(){
+                var checkID = [];//定义一个空数组
+                $("input[name='edit_role_node']:checked").each(function(i){//把所有被选中的复选框的值存入数组
+                    checkID.push(this.value);
+                });
+                var json1 = JSON.stringify(checkID);//数组转换成json，都在了，数组和json
+                var role_id =$('.role_id').val();
+                var role_name = $('#editrole').val();
+                var role_txt = $('#edit_role_txt').val();
+                var roledata = {
+                    'node_id': json1,
+                    'role_id':role_id,
+                    'role_name':role_name,
+                    'role_txt':role_txt,
+                };
+                $.ajax({
+                    type:'POST',
+                    url:'/edit_role/',
+                    data:roledata,
+                    dataType: 'json',
+                    success: function (data) {
+                        console.log(data);
+                        $('#edit_role').modal('hide');
+                        msg(data.status,data.title,data.txt);
+                        setTimeout("window.location = '/role/'",2000);
+                    },
+                    error:function(data){
+                        console.log(data);
+                    }
+
+                })
+
+            }
+
+
+
+            $('#edit').validate({
+                rules:{
+                    editrole:{ required:true,minlength:2},
+                    edit_role_node:{required:true},
+                },
+                messages:{
+                    editrole:{ required:'角色必填！',minlength:'用户名不得少于2位！'},
+                    edit_role_node:{ required:'角色权限必填!'},
+                },
+                submitHandler:function(form){
+                    editget();
+                },
+            });
+
+        });
+
+    </script>
+{% endblock %}

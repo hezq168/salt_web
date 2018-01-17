@@ -1,0 +1,64 @@
+<div class="modal fade" id="edit_host" tabindex="-1" role="dialog" aria-labelledby="edit_hostModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="edit_hostModalLabel">修改主机</h4>
+      </div>
+      <div class="modal-body">
+        <form action="#" method="post" id="edit">
+          <div class="form-group">
+            <input type="hidden" class="edit_id" name="edit_id" id="edit_id">
+            <label for="edit_ip" class="control-label">IP:</label>
+            <input type="text" class="form-control" name='edit_ip' id="edit_ip">
+          </div>
+          <div class="form-group">
+            <label for="edit_host_name" class="control-label">主机名:</label>
+            <input type="text" class="form-control" name='edit_host_name' id="edit_host_name">
+          </div>
+          <div class="form-group">
+            <label for="edit_mini" class="control-label">MinionID:</label>
+            <input type="text" class="form-control" name='edit_mini' id="edit_mini">
+          </div>
+          <div class="form-group">
+            <label for="edit_isp" class="control-label">运营商:</label>
+            <input type="text" class="form-control" name='edit_isp' id="edit_isp">
+          </div>
+          <div class="form-group">
+            <label for="edit_type" class="control-label">类别:</label>
+            <input type="text" class="form-control" name='edit_type' id="edit_type">
+          </div>
+           <div class="form-group">
+            <label for="edit_zone" class="control-label">地区:</label>
+            <input type="text" class="form-control" name='edit_zone' id="edit_zone">
+          </div>
+           <div class="form-group">
+            <label for="edit_server" class="control-label">机房:</label>
+            <input type="text" class="form-control" name='edit_server' id="edit_server">
+          </div>
+           <div class="form-group">
+            <label for="edit_user" class="control-label">维护人员:</label>
+            <select class="form-control" name="edit_user" id="edit_user">
+               {% for user in users %}
+                  <option value ="{{ user.name }}">{{ user.name }}</option>
+               {% endfor %}
+            </select>
+          </div>
+           <div class="form-group">
+            <label for="edit_group" class="control-label">所属组:</label>
+            <select class="form-control" name="edit_group" id="edit_group">
+               {% for group in groups %}
+                  <option value ="{{ group.id }}">{{ group.name }}</option>
+               {% endfor %}
+            </select>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+            <button type="submit" id='btnSubmit' class="btn btn-primary">修改</button>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

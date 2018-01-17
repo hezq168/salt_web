@@ -1,0 +1,267 @@
+{% extends 'base.html' %}
+{% block head %}
+    <title>salt-web管理系统</title>
+{% endblock %}
+{% block body %}
+    <div class="row">
+        {# 左边菜单#}
+        {% include 'main/_main.html' %}
+        <div class="col-md-10">
+            {#        面包屑导航#}
+            <ol class="breadcrumb" style="margin-bottom: 5px">
+                <li><a href="/">首页</a></li>
+                <li class="active">用户列表</li>
+            </ol>
+            {#        用户操作#}
+            <div class="row"  >
+                <div class="col-md-6" style="margin-bottom: 5px">
+                    {% if session.user.node.has_key(2) or current_user.role_id==1%}
+                        <button class="btn btn-sm btn-primary" data-toggle="modal" data-target="#add_user" type="button">添加用户</button>
+                    {% endif %}
+                    {% if session.user.node.has_key(3) or current_user.role_id==1%}
+                        <button class="btn btn-sm btn-primary" data-toggle="modal" id="Btn_edit" data-target="#edit_user" type="button" disabled="disabled">编辑</button>
+                        <button class="btn btn-sm  btn-warning" type="button" id="Btn_status" disabled="disabled">禁用</button>
+                    {% endif %}
+                </div>
+                <div class="col-md-12">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover table-striped" >
+                            <thead>
+                            <tr class="success">
+                                <th width="2%">#</th>
+                                <th>ID</th>
+                                <th>用户名</th>
+                                <th>姓名</th>
+                                <th>性别</th>
+                                <th>QQ</th>
+                                <th>邮箱</th>
+                                <th>电话</th>
+                                <th>状态</th>
+                                <th>最后登录时间</th>
+                                <th>角色</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for user in users %}
+                                <tr>
+                                    <input type="hidden" class="user_id" name="user_id" value="{{ user.id }}">
+                                    <td>
+                                        <input type="radio" name="radio" class="radio" value="{{ user.id }}">
+                                    </td>
+                                    <td>{{ user.id }}</td>
+                                    <td>{{ user.username }}</td>
+                                    <td>{{ user.name }}</td>
+                                    <td>{{ user.sex }}</td>
+                                    <td>{{ user.qq }}</td>
+                                    <td>{{ user.email }} </td>
+                                    <td>{{ user.tel }}</td>
+                                    <td><span class="{{'status label label-success' if user.status == 0 else 'status label label-warning'}}">
+                                        {{ '激活' if user.status== 0 else '禁用' }}
+                                        </span></td>
+                                    <td>{{ user.login_date }}</td>
+                                    <td>
+                                        {% for role in roles %}
+                                            {{  role.name if user.role_id == role.id else '' }}
+                                        {% endfor %}</td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+
+            {#        内容#}
+        </div>
+        {# 添加用户模态窗口#}
+        {% if session.user.node.has_key(2) or current_user.role_id==1%}
+            {% include 'user/add_user.html' %}
+        {% endif %}
+        {# 修改用户模态窗口#}
+        {% if session.user.node.has_key(3) or current_user.role_id==1%}
+            {% include 'user/edit_user.html' %}
+        {% endif %}
+        {# ajax返回消息模态窗口#}
+        {% include 'msg.html' %}
+
+    </div>
+{% endblock %}
+{% block js_script %}
+    <script type="application/javascript">
+        $(document).ready(function(){
+            {#          返回消息#}
+            function msg(op,title,body){
+                if (op == 'ok')
+                {
+                    $('.msg-title').html(title).addClass('alert alert-success');
+                    $('.msg-body').html(body);
+                    $('#myModal').modal('show');
+                }else if(op == 'error'){
+                    $('.msg-title').html(title).addClass('alert alert-warning');
+                    $('.msg-body').html(body);
+                    $('#myModal').modal('show');
+                };
+
+            };
+            {#            添加用户#}
+            {% if session.user.node.has_key(2) or current_user.role_id==1%}
+                $('#add').validate({
+                    rules:{
+                        add_username:{ required:true,minlength:2,remote:'/check_user/'},
+                        add_password:{ required:true,minlength:6},
+                        add_name:{ required:true,minlength:2},
+                        add_sex:{required:true},
+                        add_tel:{required:true,minlength:6,digits:true},
+                        add_qq:{required:true,minlength:4,digits:true},
+                        add_email:{ required:true,email:true,remote:'/check_email/'},
+                        add_role:{required:true},
+                    },
+                    messages:{
+                        add_username:{ required:'用户名必填！',minlength:'用户名不得少于2位！',remote:'用户名已被使用!'},
+                        add_password:{ required:'密码必填！',minlength:'密码至少6位字母或数字！'},
+                        add_name:{ required:'姓名必填！',minlength:'姓名不得少于2位！'},
+                        add_sex:{ required:'性别必填！'},
+                        add_tel:{ required:'手机号必填！',minlength:'手机号位数不正确！',digits:'只支持数字!'},
+                        add_qq:{ required:'QQ必填！',minlength:'QQ至少4位数字！',digits:'只支持数字!'},
+                        add_email:{required:'邮箱必填！',email:"邮箱格式不正确",remote:'邮箱已被使用!'},
+                        add_role:{required:'角色必填！'}
+                    },
+                    submitHandler:function(form){
+                        $.ajax({
+                            type:'POST',
+                            url:'/add_user/',
+                            data:$(form).serialize(),
+                            dataType: 'json',
+                            success: function (data) {
+                                $('#add_user').modal('hide');
+                                msg(data.status,data.title,data.txt);
+                                //window.location.href = '/user/';
+                            },
+                            error:function(data){
+                                $('#add_user').modal('hide');
+                                msg(data.status,data.title,data.txt);
+                            }
+
+                        })
+                    }
+                });
+            {% endif %}
+            {#  状态修改#}
+            {% if session.user.node.has_key(2) or current_user.role_id==1%}
+                $('.radio').click(function(){
+                    var user_id = $(this).parent().parent().find('td:eq(1)').html();
+                    var user_status = $.trim($(this).parent().parent().find('td:eq(8)').text());
+                    if(user_status=='激活'){
+                        $('#Btn_status').removeAttr("disabled").val(1).removeClass('btn-success').addClass('btn-warning');
+                        $('#Btn_edit').removeAttr("disabled").val(user_id);
+                    }else{
+                        $('#Btn_status').removeAttr("disabled").val(0).html("激活").removeClass('btn-warning').addClass('btn-success');
+                        $('#Btn_edit').removeAttr("disabled").val(user_id);
+                    }
+                });
+
+                {#  禁/启用用户#}
+                $("#Btn_status").click(function(){
+                    var user_id = $('input:radio[name="radio"]:checked').val();
+                    var user_op = $('#Btn_status').val();
+                    user_status(user_id,user_op);
+                    {#            //修改用户状态ajax#}
+                    function user_status(user_id,user_op){
+                        var user_data ={
+                            'user_id' : user_id,
+                            'user_op' : user_op,
+                        };
+                        $.ajax({
+                            url:'/user_status/',
+                            type:'get',
+                            dataType:'json',
+                            data:user_data,
+                            success:function(data){
+                                msg(data.status,data.title,data.txt);
+                                setTimeout("window.location = '/user/'",2000);
+                            },
+                            error:function(e){
+                                console.log(e)
+                            }
+                        })
+                    };
+                });
+
+                {#  编辑用户获取资料#}
+                $('#Btn_edit').click(function(){
+                    var user_id = $(this).val();
+                    var user_data ={
+                        'user_id' : user_id,
+                    };
+                    $.ajax({
+                        url:'/edit_user/',
+                        type:'get',
+                        dataType:'json',
+                        data:user_data,
+                        success:function(data){
+                            $('#edit_username').val(data.username);
+                            $('#edit_name').val(data.name);
+                            $('#edit_tel').val(data.tel);
+                            $('#edit_qq').val(data.qq);
+                            $('#edit_email').val(data.email);
+                            $('#edit_id').val(data.id)
+                            $("input[name=edit_sex][value="+ data.sex +"]").attr("checked",true);
+                            $('#edit_role option').each(function(){
+                                if ($(this).val()==data.role_id){
+                                    $(this).attr("selected",true);
+                                }else{
+                                    $(this).attr("selected",false);
+                                }
+                            });
+                        },
+                        error:function(e){
+                            console.log(e)
+                        }
+                    });
+                });
+                {# 更新用户信息#}
+                $('#edit').validate({
+                    rules:{
+                        edit_username:{ required:true,minlength:2},
+                        edit_name:{ required:true,minlength:2},
+                        edit_sex:{required:true},
+                        edit_tel:{required:true,minlength:6,digits:true},
+                        edit_qq:{required:true,minlength:4,digits:true},
+                        edit_email:{ required:true,email:true},
+                        edit_role:{required:true},
+                    },
+                    messages:{
+                        edit_username:{ required:'用户名必填！',minlength:'用户名不得少于2位！'},
+                        edit_name:{ required:'姓名必填！',minlength:'姓名不得少于2位！'},
+                        edit_sex:{ required:'性别必填！'},
+                        edit_tel:{ required:'手机号必填！',minlength:'手机号位数不正确！',digits:'只支持数字!'},
+                        edit_qq:{ required:'QQ必填！',minlength:'QQ至少4位数字！',digits:'只支持数字!'},
+                        edit_email:{required:'邮箱必填！',email:"邮箱格式不正确"},
+                        edit_role:{required:'角色必填！'}
+                    },
+                    submitHandler:function(form){
+                        $.ajax({
+                            type:'POST',
+                            url:'/edit_user/',
+                            data:$(form).serialize(),
+                            dataType: 'json',
+                            success: function (data) {
+                                $('#edit_user').modal('hide');
+                                msg(data.status,data.title,data.txt);
+                                setTimeout("window.location = '/user/'",2000);
+                            },
+                            error:function(data){
+                                $('#edit_user').modal('hide');
+                                msg(data.status,data.title,data.txt);
+                            }
+
+                        })
+                    }
+                });
+
+            {% endif %}
+        });
+
+    </script>
+{% endblock %}

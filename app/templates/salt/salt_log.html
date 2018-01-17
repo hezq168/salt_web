@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+{% block head %}
+    <title>salt-web管理系统</title>
+{% endblock %}
+{% block body %}
+
+<div class="row">
+{# 左边菜单#}
+{% include 'main/_main.html' %}
+    <div class="col-md-10">
+        {#        面包屑导航#}
+        <ol class="breadcrumb" style="margin-bottom: 5px">
+            <li><a href="/">首页</a></li>
+            <li class="active">操作记录</li>
+        </ol>
+        {#        job管理#}
+        <div class="row">
+{#            <div class="col-md-6">#}
+{#                <div class="panel panel-default">#}
+{#                    <div class="panel-body">#}
+{#                        <form action="#" method="post" id="add" class="form-inline">#}
+{#                            <div class="form-group">#}
+{#                                <label for="cmd" class="control-label">jid:</label>#}
+{#                                <input type="text" class="form-control" name='cmd' id="cmd" style="width: 300px">#}
+{#                            </div>#}
+{#                            <div class="form-group">#}
+{#                                <button type="button" class="btn btn-primary" id="Btn_Cmd">查询</button>#}
+{#                            </div>#}
+{#                        </form>#}
+{#                    </div>#}
+{#                </div>#}
+{#            </div>#}
+            <div class="col-md-12" >
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover table-striped" >
+                            <thead>
+                            <tr class="success">
+                                <th>ID</th>
+                                <th>时间</th>
+                                <th>用户名</th>
+                                <th>类型</th>
+                                <th>操作</th>
+                                <th>目标</th>
+                                <th>jid</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for log in logs.items %}
+                                <tr>
+                                    <td>{{ log.id }}</td>
+                                    <td>{{ log.date }}</td>
+                                    <td>{{ log.user }}</td>
+                                    <td>{{ log.type }}</td>
+                                    <td>{{ log.cmd }}</td>
+                                    <td>{{ log.target }}</td>
+                                    <td><a href="#" class="jid">{{ log.jid }}</a></td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+            {#  分页#}
+            <nav aria-label="Page navigation" style="text-align: center;">
+                <ul class="pagination pagination-sm">
+                    {% for p in logs.iter_pages() %}
+                        <li>
+                            <a href="{{ url_for('.Salt_log',page=p)}}">{{p}}</a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </nav>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+{# 结果查询模态窗口#}
+<div class="modal fade bs-example-modal-lg" tabindex="-1" role="dialog" id="log">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title log_title"></h4>
+      </div>
+        <pre>
+          <div class="modal-body log">
+          </div>
+       </pre>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-dismiss="modal">关闭</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+
+
+{#    加载窗口#}
+{% include 'spin.html' %}
+{# ajax返回消息模态窗口#}
+{% include 'msg.html' %}
+{% endblock %}
+
+{% block js_script %}
+    <script type="application/javascript">
+        $(document).ready(function() {
+            {# 返回消息#}
+            function msg(op, title, body) {
+                if (op == 'ok') {
+                    $('.msg-title').html(title).addClass('alert alert-success');
+                    $('.msg-body').html(body);
+                    $('#myModal').modal('show');
+                } else if (op == 'error') {
+                    $('.msg-title').html(title).addClass('alert alert-warning');
+                    $('.msg-body').html(body);
+                    $('#myModal').modal('show');
+                };
+            };
+
+            $('.jid').click(function(){
+                var jid = $(this).html();
+                var jiddata = {
+                  'jid' : jid,
+                };
+                $.ajax({
+                    type:'POST',
+                    url:'/salt_log/',
+                    data:jiddata,
+                    dataType: 'json',
+                    success: function (data) {
+                        $('#log').modal('show');
+                        if (data['data']){
+                            $('.log_title').text('key管理');
+                            $('.log').text(data['data']['fun']);
+                        }else{
+                            $.each(data['Result'],function(i,v){
+                                $('.log_title').text(i+'执行'+data['Arguments'][0]+'结果:');
+                                $('.log').text(v['return']);
+                            });
+                        }
+
+                    },
+                    error:function(data){
+                        console.log(data);
+                    }
+
+                });
+            });
+        });
+    </script>
+{% endblock %}

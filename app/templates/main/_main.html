@@ -1,0 +1,21 @@
+<div class="col-md-2" style="padding-left: 0px;padding-right: 0px;">
+    <div class="list-group text-center">
+        <a href="#" class="list-group-item active main_active">首页</a>
+    {% if session.user.node.has_key(1) or session.user.node.has_key(5)  or current_user.role_id==1%}
+        <a href="#" class="list-group-item active main_active">用户管理</a>
+        <a href="{{ url_for('main.user') }}" class="list-group-item">用户列表</a>
+    {% endif %}
+    {% if session.user.node.has_key(5) or current_user.role_id==1%}
+        <a href="{{ url_for('main.role') }}" class="list-group-item">角色管理</a>
+    {% endif %}
+        <a href="#" class="list-group-item active main_active">主机管理</a>
+        <a href="{{ url_for('main.hosts') }}" class="list-group-item">主机列表</a>
+        <a href="{{ url_for('main.hosts_group') }}" class="list-group-item">主机组列表</a>
+
+        <a href="#" class="list-group-item active main_active">salt管理</a>
+        <a href="{{ url_for('salt.salt_key') }}" class="list-group-item">key模块</a>
+        <a href="{{ url_for('salt.salt_cmd') }}" class="list-group-item">cmd模块</a>
+        <a href="{{ url_for('salt.Salt_log') }}" class="list-group-item">操作记录</a>
+{#        <a href="{{ url_for('salt.salt_jobs') }}" class="list-group-item">job管理</a>#}
+    </div>
+</div>

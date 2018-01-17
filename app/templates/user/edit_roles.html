@@ -1,0 +1,39 @@
+{# 修改角色模态窗口#}
+<div class="modal fade" id="edit_role" tabindex="-1" role="dialog" aria-labelledby="edit_roleModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="edit_roleModalLabel">修改角色</h4>
+      </div>
+      <div class="modal-body">
+        <form action="#" method="post" id="edit">
+            <input type="hidden" class="role_id" name="role_id">
+          <div class="form-group">
+            <label for="editrole" class="control-label">角色名:</label>
+            <input type="text" class="form-control" name='editrole' id="editrole">
+          </div>
+          <div class="form-group">
+            <label for="edit_role_txt" class="control-label">角色说明:</label>
+            <input type="text" class="form-control" name='edit_role_txt' id="edit_role_txt">
+          </div>
+          <div class="form-group">
+            <label for="edit_role_node" class="control-label">权限:</label>
+            <div class="checkbox">
+                {% for node in nodes %}
+                    <label><input type="checkbox" name="edit_role_node" class='edit_role_node' value="{{  node.id }}">{{  node.id }}、{{ node.name }}</label>
+                {% endfor %}
+            </div>
+          </div>
+
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+            <button type="submit" id='btnEdit' class="btn btn-primary">修改</button>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,262 @@
+{% extends 'base.html' %}
+{% block head %}
+    <title>salt-web管理系统</title>
+{% endblock %}
+{% block body %}
+<div class="row">
+{# 左边菜单#}
+{% include 'main/_main.html' %}
+<div class="col-md-10">
+        {#        面包屑导航#}
+                <ol class="breadcrumb" style="margin-bottom: 5px">
+                    <li><a href="/">首页</a></li>
+                    <li class="active">主机列表</li>
+                </ol>
+{#        主机操作#}
+            <div class="row"  >
+                <div class="col-md-6" style="margin-bottom: 5px">
+                    {% if session.user.node.has_key(11) or current_user.role_id==1%}
+                    <button class="btn btn-sm btn-primary" data-toggle="modal" data-target="#add_host" type="button">添加主机</button>
+                    {% endif %}
+                    {% if session.user.node.has_key(12) or current_user.role_id==1%}
+                    <button class="btn btn-sm btn-primary" data-toggle="modal" id="Btn_edit" data-target="#edit_host" type="button" disabled="disabled">编辑</button>
+                    {% endif %}
+                    {% if session.user.node.has_key(13) or current_user.role_id==1%}
+                    <button class="btn btn-sm  btn-danger" type="button" id="Btn_del" disabled="disabled">删除</button>
+                    {% endif %}
+                </div>
+                <div class="col-md-12">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover table-striped" >
+                        <thead>
+                            <tr class="success">
+                                <th width="2%">#</th>
+                                <th>ID</th>
+                                <th>IP地址</th>
+                                <th>主机名</th>
+                                <th>MinionID</th>
+                                <th>运营商</th>
+                                <th>类别</th>
+                                <th>地区</th>
+                                <th>机房</th>
+                                <th>主机组</th>
+                                <th>维护人员</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for hosts in host %}
+                            <tr>
+                            <td>
+                                <input type="radio" name="radio" class="radio" value="{{ hosts.id }}">
+                                 <td>{{ hosts.id }}</td>
+                                 <td>{{ hosts.ip }}</td>
+                                 <td>{{ hosts.name }}</td>
+                                 <td>{{ hosts.minion }}</td>
+                                 <td>{{ hosts.isp }}</td>
+                                 <td>{{ hosts.type }}</td>
+                                 <td>{{ hosts.zone }}</td>
+                                 <td>{{ hosts.server }}</td>
+                                 <td>{% for group in groups %}
+                                        {{  group.name if group.id == hosts.group_id else '' }}
+                                    {% endfor %}
+                                 </td>
+                                 <td>{{ hosts.user }}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+
+            </table>
+                    </div>
+                </div>
+
+            </div>
+</div>
+</div>
+{# 添加主机模态窗口#}
+{% if session.user.node.has_key(11) or current_user.role_id==1%}
+{% include 'hosts/add_hosts.html' %}
+{% endif %}
+{# 修改主机模态窗口#}
+{% if session.user.node.has_key(12) or current_user.role_id==1%}
+{% include 'hosts/edit_hosts.html' %}
+{% endif %}
+
+{# ajax返回消息模态窗口#}
+{% include 'msg.html' %}
+{% endblock %}
+{% block js_script %}
+<script type="application/javascript">
+$(document).ready(function() {
+    {#          返回消息#}
+function msg(op, title, body) {
+    if (op == 'ok') {
+        $('.msg-title').html(title).addClass('alert alert-success');
+        $('.msg-body').html(body);
+        $('#myModal').modal('show');
+    } else if (op == 'error') {
+        $('.msg-title').html(title).addClass('alert alert-warning');
+        $('.msg-body').html(body);
+        $('#myModal').modal('show');
+    };
+};
+
+{#  按钮状态修改#}
+        $('.radio').click(function(){
+                $('#Btn_del').removeAttr("disabled");
+                $('#Btn_edit').removeAttr("disabled");
+          });
+
+jQuery.validator.addMethod("ip", function(value, element) {
+  return this.optional(element) || /^(([1-9]|([1-9]\d)|(1\d\d)|(2([0-4]\d|5[0-5])))\.)(([1-9]|([1-9]\d)|(1\d\d)|(2([0-4]\d|5[0-5])))\.){2}([1-9]|([1-9]\d)|(1\d\d)|(2([0-4]\d|5[0-5])))$/.test(value);
+}, "请填写正确的IP地址。");
+
+
+{#    添加主机#}
+        $('#add').validate({
+            rules:{
+                add_ip:{ required:true,minlength:2,ip:true,remote:'/check_host_ip/'},
+                add_host_name:{ required:true,minlength:2},
+                add_isp:{ required:true,minlength:2},
+                add_type:{ required:true,minlength:2},
+                add_zone:{ required:true,minlength:2},
+                add_server:{ required:true,minlength:2},
+                add_user:{ required:true},
+            },
+            messages:{
+                add_ip:{ required:'IP地址必填！',minlength:'IP不得少于2位！',remote:'IP重复！'},
+                add_host_name:{ required:'主机名必填!',minlength:'主机名不得少于2位'},
+                add_isp:{ required:'运营商必填!',minlength:'运营商不得少于2位'},
+                add_type:{ required:'类别必填!',minlength:'类别不得少于2位'},
+                add_zone:{ required:'地区必填!',minlength:'地区不得少于2位'},
+                add_server:{ required:'机房必填!',minlength:'机房不得少于2位'},
+                add_user:{ required:'维护人员必填!'},
+            },
+            submitHandler:function(form){
+                $.ajax({
+                    type:'POST',
+                    url:'/add_hosts/',
+                    data:$(form).serialize(),
+                    dataType: 'json',
+                    success: function (data) {
+                        $('#add_host').modal('hide');
+                        msg(data.status,data.title,data.txt);
+                        setTimeout("window.location = '/hosts/'",2000);
+                    },
+                    error:function(data){
+                        console.log(data)
+                    }
+
+
+
+                });
+            },
+        });
+
+{#  修改主机#}
+    $('#Btn_edit').click(function(){
+            var host_id = $('input:radio[name="radio"]:checked').val();
+            var hostdata ={
+                'host_id' : host_id,
+            }
+            $.ajax({
+                type:'GET',
+                url:'/edit_hosts/',
+                data:hostdata,
+                dataType: 'json',
+                success: function (data) {
+                    console.log(data);
+                    $('#edit_id').val(data.id);
+                    $('#edit_ip').val(data.ip);
+                    $('#edit_host_name').val(data.name);
+                    $('#edit_mini').val(data.minion);
+                    $('#edit_isp').val(data.isp);
+                    $('#edit_type').val(data.type);
+                    $('#edit_zone').val(data.zone);
+                    $('#edit_server').val(data.server);
+                    $('#edit_user option').each(function(){
+                       if ($(this).val()==data.user){
+                           $(this).attr("selected",true);
+                       }else{
+                            $(this).attr("selected",false);
+                       }
+                    });
+                    $('#edit_group option').each(function(){
+                       if ($(this).val()==data.group){
+                           $(this).attr("selected",true);
+                       }else{
+                            $(this).attr("selected",false);
+                       }
+                    });
+                },
+                error:function(data){
+                    console.log(data);
+                }
+            });
+        });
+
+
+    $('#edit').validate({
+        rules:{
+            edit_ip:{ required:true,minlength:2,ip:true,remote:'/check_host_ip/'},
+            edit_host_name:{ required:true,minlength:2},
+            edit_isp:{ required:true,minlength:2},
+            edit_type:{ required:true,minlength:2},
+            edit_zone:{ required:true,minlength:2},
+            edit_server:{ required:true,minlength:2},
+            edit_user:{ required:true},
+        },
+        messages:{
+            edit_ip:{ required:'IP地址必填！',minlength:'IP不得少于2位！',remote:'IP重复！'},
+            edit_host_name:{ required:'主机名必填!',minlength:'主机名不得少于2位'},
+            edit_isp:{ required:'运营商必填!',minlength:'运营商不得少于2位'},
+            edit_type:{ required:'类别必填!',minlength:'类别不得少于2位'},
+            edit_zone:{ required:'地区必填!',minlength:'地区不得少于2位'},
+            edit_server:{ required:'机房必填!',minlength:'机房不得少于2位'},
+            edit_user:{ required:'维护人员必填!'},
+        },
+        submitHandler:function(form){
+            $.ajax({
+                type:'POST',
+                url:'/edit_hosts/',
+                data:$(form).serialize(),
+                dataType: 'json',
+                success: function (data) {
+                    $('#edit_host').modal('hide');
+                    msg(data.status,data.title,data.txt);
+                    setTimeout("window.location = '/hosts/'",2000);
+                },
+                error:function(data){
+                    console.log(data)
+                }
+
+
+
+            });
+        },
+    });
+
+
+{#  删除主机#}
+        $('#Btn_del').click(function(){
+            var host_id = $('input:radio[name="radio"]:checked').val();
+            var hostdata ={
+                'host_id' : host_id,
+            }
+            $.ajax({
+                type:'POST',
+                url:'/del_hosts/',
+                data:hostdata,
+                dataType: 'json',
+                success: function (data) {
+                    msg(data.status,data.title,data.txt);
+                    setTimeout("window.location = '/hosts/'",2000);
+                },
+                error:function(data){
+                    console.log(data)
+                }
+            });
+        });
+
+});
+</script>
+{% endblock %}
